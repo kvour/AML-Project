@@ -1,12 +1,29 @@
 # AML_Project
 
-1.Obtaining the Dataset
+Classification Approach (https://arxiv.org/pdf/1511.04668.pdf)
 
+DNN Input: 
+-Image only
+-Altitude?
+
+DNN output: 
+-Flight Command 
+
+-Altitude Control redundant?
+
+1.Obtaining the Dataset 
+
+-Manually pilot the UAV around the corridor
+
+-Cover as many "dangerous" cases as possible
+
+-Generate additional images by adding noise
 
 2.Training the DNN
 
+Later...
 
-3.Testing (V-REP/IRL)
+3. Testing 
 
 
 Papers

@@ -24,7 +24,7 @@ DNN output:
 
 Later...
 
-3. Testing 
+3.Testing 
 
 
 Papers

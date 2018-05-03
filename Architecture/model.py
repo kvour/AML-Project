@@ -105,7 +105,7 @@ class Inception3(nn.Module):
         if self.training and self.aux_logits:
             return x, aux
         # x=F.log_softmax(x, dim=1)
-        return x 
+        return x
 
 
 class InceptionA(nn.Module):
@@ -307,56 +307,59 @@ class BasicConv2d(nn.Module):
         x = self.bn(x)
         return F.relu(x, inplace=True)
 
+class CustomNet(nn.Module):
 
-# class AlexNet_mod(nn.Module):
-#     def __init__(self):
-#         super(ConvNet, self).__init__()
-#         # Conv2d(in_channels, out_channels, kernel_size, stride=1, etc.)
-#         self.features = nn.Sequential(
-#             nn.Conv2d(3, 96, kernel_size=11, stride=4, padding=2),
-#             nn.ReLU(inplace=True),
-#             nn.MaxPool2d(kernel_size=3, stride=2),
-#             nn.Conv2d(96, 256, kernel_size=5, padding=2),
-#             nn.ReLU(inplace=True),
-#             nn.MaxPool2d(kernel_size=3, stride=2),
-#             nn.Conv2d(256, 384, kernel_size=3, padding=1),
-#             nn.ReLU(inplace=True),
-#             nn.Conv2d(384, 384, kernel_size=3, padding=1),
-#             nn.ReLU(inplace=True),
-#             nn.Conv2d(384, 256, kernel_size=3, padding=1),
-#             nn.ReLU(inplace=True),
-#             nn.MaxPool2d(kernel_size=3, stride=2),
-#         )
-#         self.classifier = nn.Sequential(
-#             nn.Dropout(0.5),   #Depends on input
-#             nn.Linear(!!!, 4096),
-#             nn.ReLU(inplace=True),
-#             nn.Dropout(0.5),
-#             nn.Linear(4096, 4096),
-#             nn.ReLU(inplace=True),
-#             nn.Linear(4096, 6),
-#         )
+    def __init__(self, num_classes=5):
+        super(CustomNet, self).__init__()
+        self.features = nn.Sequential( #299
+            nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2), #74
+            nn.ReLU(inplace=True),
+            nn.Conv2d(64, 192, kernel_size=8, stride=2, padding=2), #36
+            nn.ReLU(inplace=True),
+            nn.Conv2d(192, 384, kernel_size=8, stride=2, padding=1), #16
+            nn.ReLU(inplace=True),
+            nn.Conv2d(384, 256, kernel_size=4), #13
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 64, kernel_size=2, stride=1), #12
+            nn.ReLU(inplace=True),
+        )
+        self.classifier = nn.Sequential(
+            nn.Dropout(),
+            nn.Linear(64 * 12 * 12, 4096),
+            nn.ReLU(inplace=True),
+            nn.Dropout(),
+            nn.Linear(4096, 4096),
+            nn.ReLU(inplace=True),
+            nn.Linear(4096, num_classes),
+        )
 
-#     def forward(self, x):
-#         x = self.features(x)
-#         x = x.view(x.size(0), !!!) #Depends on input
-#         x = self.classifier(x)
-#         return F.log_softmax(x, dim=1)
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), 256 * 6 * 6)
+        x = self.classifier(x)
+        return x
 
 
-
-
-
-# model = AlexNet_mod()
-kwargs = {'num_classes': 5 , 'aux_logits' : False}
-
-model = Inception3(**kwargs ) ##Input 299x299 
+if args.model == 'Inception':
+    kwargs = {'num_classes': 5 , 'aux_logits' : False}
+    model = Inception3(**kwargs ) ##Input 299x299
+elif args.model == 'Alexnet':
+    kwargs = {'num_classes': 5 }
+    model = models.alexnet(**kwargs )
+elif args.model == 'Custom': ##Input 299x299
+    kwargs = {'num_classes': 5 }
+    model = CustomNet(**kwargs )
 
 
 
 if args.cuda:
     model.cuda()
-    
+    # model=torch.nn.DataParallel(model, device_ids=[0,1])
+
+
+if args.load==1:
+    model.load_state_dict(torch.load(args.load_path))
+
 print('\n---Model Information---')
 print('Net:',model)
 print('Use GPU:', args.cuda)

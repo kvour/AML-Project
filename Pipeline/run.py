@@ -6,7 +6,7 @@ import torch
 from Pipeline.option import args
 from Data.data import train_loader, test_loader
 from Architecture.model import model
-from Architecture.optim import optimizer 
+from Architecture.optim import optimizer
 
 criterion = nn.CrossEntropyLoss()
 
@@ -23,7 +23,7 @@ def train(epoch):
         data, target = Variable(data).float(), Variable(target).long()
         optimizer.zero_grad()
         output = model(data)
-        
+
         _, pred = torch.max(output.data, 1)
         correct_batch += pred.eq(target.data).sum()
         correct += pred.eq(target.data).sum()
@@ -41,7 +41,11 @@ def train(epoch):
         correct, len(train_loader.dataset),
         100. * correct / len(train_loader.dataset)))
     if epoch % args.save_model_epoch==0:
-        torch.save(model.state_dict(), 'model_'+str(epoch)+'.pth')
+        if args.aug == 0:
+            torch.save(model.state_dict(), args.model+'_bs'+str(args.batch_size)+'e'+str(epoch)+'.pth')
+        else:
+            torch.save(model.state_dict(), args.model+'_bs'+str(args.batch_size)+'e'+str(epoch)+'_aug'+'.pth')
+    return correct, 100*correct / len(train_loader.dataset)
 
 
 def test():
@@ -65,4 +69,4 @@ def test():
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
-
+    return correct, 100*correct / len(test_loader.dataset)
